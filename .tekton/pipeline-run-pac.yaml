@@ -39,7 +39,7 @@ spec:
     - name: gitRevision
       value: "{{ revision }}"
     - name: contextDir
-      value: .
+      value: "."
     - name: imageName
       value: image-registry.openshift-image-registry.svc:5000/pac-test/funcpacold:latest
     - name: registry

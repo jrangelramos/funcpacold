@@ -56,6 +56,11 @@ spec:
       workspaces:
         - name: output
           workspace: source-workspace
+        - name: cache
+          workspace: cache-workspace
+        - name: dockerconfig
+          workspace: dockerconfig-workspace
+      
     - name: scaffold
       params:
         - name: path
@@ -63,6 +68,10 @@ spec:
       workspaces:
         - name: source
           workspace: source-workspace
+        - name: cache
+          workspace: cache-workspace
+        - name: dockerconfig
+          workspace: dockerconfig-workspace
       runAfter:
         - fetch-sources
       taskSpec:
@@ -71,10 +80,19 @@ spec:
             description: Path to the function project
             name: path
         steps:
-          - image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:b0eb1f0b2f180afb207186267601665f2979c4cf21a0e434e7601123e3826716
+          - image: ghcr.io/knative/func-utils:latest
             name: func-scaffold
             script: |
               scaffold $(params.path)
+        workspaces:
+          - description: The workspace containing the function project
+            name: source
+          - name: cache
+            optional: true
+          - name: sslcertdir
+            optional: true
+          - name: dockerconfig
+            optional: true
       
     - name: build
       params:
@@ -127,7 +145,7 @@ spec:
         steps:
           - args:
               - $(params.ENV_VARS[*])
-            image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:b0eb1f0b2f180afb207186267601665f2979c4cf21a0e434e7601123e3826716
+            image: ghcr.io/knative/func-utils:latest
             name: generate
             script: |
               echo "Processing Build Environment Variables"
@@ -237,17 +255,27 @@ spec:
             description: Container image to be deployed
             name: image
         steps:
-          - image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:b0eb1f0b2f180afb207186267601665f2979c4cf21a0e434e7601123e3826716
+          - image: ghcr.io/knative/func-utils:latest
             name: func-deploy
             script: |
               deploy $(params.path) "$(params.image)"
         workspaces:
           - description: The workspace containing the function project
             name: source
+          - name: cache
+            optional: true
+          - name: sslcertdir
+            optional: true
+          - name: dockerconfig
+            optional: true
       
       workspaces:
         - name: source
           workspace: source-workspace
+        - name: cache
+          workspace: cache-workspace
+        - name: dockerconfig
+          workspace: dockerconfig-workspace
   workspaces:
     - description: Directory where function source is located.
       name: source-workspace
